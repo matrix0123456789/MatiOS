@@ -91,7 +91,7 @@ bits64:
         mov byte [0xb8014+320], 'e'
         mov byte [0xb8016+320], '!'
 
-
+        call 0x9000
 loop2: jmp loop2
 ;gdt
 gdt_start:
