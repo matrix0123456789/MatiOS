@@ -32,36 +32,24 @@ start:
         nop
         nop
         nop
-        jmp dword 0x10:bits16
+        jmp dword 0x18:bits32
 
 
-[BITS 16]
-bits16:
-        mov ax, 0xb800
-        mov es, ax
-        mov byte [es:0x0], '1'
-        mov byte [es:0x2], '6'
-        mov byte [es:0x4], 'b'
-        mov byte [es:0x6], 'i'
-        mov byte [es:0x8], 't'
-        mov byte [es:0xa], 's'
 
 loop1: jmp loop1
 [BITS 32]
 bits32:
-        mov byte [0xb8000], '3'
-        mov byte [0xb8002], '2'
-        mov byte [0xb8004], 'b'
-        mov byte [0xb8006], 'i'
-        mov byte [0xb8008], 't'
-        mov byte [0xb800a], 's'
+        mov byte [0xb8000+160], '3'
+        mov byte [0xb8002+160], '2'
+        mov byte [0xb8004+160], 'b'
+        mov byte [0xb8006+160], 'i'
+        mov byte [0xb8008+160], 't'
+        mov byte [0xb800a+160], 's'
 
 loop2: jmp loop2
 ;gdt
 gdt_start:
 gdt_null:
-        dd 0
-        dd 0
         dd 0
         dd 0
 gdt_data:
@@ -73,12 +61,12 @@ gdt_data:
         db 0x0         ; Base (bits  24 -31)
 
 gdt_code16:
-dw 0xffff
-dw 0x0
-db 0x0
-db  10011010b
-db  10001111b
-db 0x0
+        dw 0xffff
+        dw 0x0
+        db 0x0
+        db  10011010b
+        db  10001111b
+        db 0x0
 gdt_code32:
 
         dw 0xffff     ; Limit (bits  0-15)
