@@ -46,6 +46,52 @@ bits32:
         mov byte [0xb8008+160], 't'
         mov byte [0xb800a+160], 's'
 
+;creating basic pagination
+        mov dword [0x1000], 0x2001
+        mov dword [0x2000], 0x3001
+        mov dword [0x3000], 0x4001
+
+        mov eax, 0x0001
+        mov ebx, 0x4000
+paginationLoop:
+        mov [ebx], eax
+        add eax, 0x1000
+        add ebx, 8
+        cmp ebx, 0x5000
+        jne paginationLoop
+
+        mov eax, 0x1001
+        mov cr3, eax
+
+        mov eax, cr4
+        or eax, 0x00000020
+        mov cr4, eax
+        mov ecx, 0xC0000080
+        rdmsr
+        or eax, 0x100
+        wrmsr
+        mov ebx, 0x80000001
+        mov cr0, ebx
+
+        mov esp, 0x11000
+        jmp 0x20:bits64
+
+[bits 64]
+bits64:
+        mov byte [0xb8000+320], '6'
+        mov byte [0xb8002+320], '4'
+        mov byte [0xb8004+320], 'b'
+        mov byte [0xb8006+320], 'i'
+        mov byte [0xb8008+320], 't'
+        mov byte [0xb800a+320], 's'
+        mov byte [0xb800c+320], ' '
+        mov byte [0xb800e+320], 'm'
+        mov byte [0xb8010+320], 'o'
+        mov byte [0xb8012+320], 'd'
+        mov byte [0xb8014+320], 'e'
+        mov byte [0xb8016+320], '!'
+
+
 loop2: jmp loop2
 ;gdt
 gdt_start:

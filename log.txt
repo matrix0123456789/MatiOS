@@ -475,6 +475,7 @@ CCS=00000004 CCD=00000001 CCO=EFLAGS
 EFER=0000000000000000
 Servicing hardware INT=0x0e
 Servicing hardware INT=0x0e
+Servicing hardware INT=0x08
 Servicing hardware INT=0x0e
 Servicing hardware INT=0x0e
 Servicing hardware INT=0x0e
