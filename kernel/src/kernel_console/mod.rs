@@ -1,8 +1,17 @@
 use crate::cpu_ports::{port_input8, port_output8};
 
 pub fn print(text: &str) {
-    for char in text.as_bytes() {
-        print_char(*char as char);
+    let text_pointer = text.as_ptr();
+    let count = text.len();
+    let mut i = 0;
+    loop {
+        unsafe {
+            print_char(*(text_pointer.offset(i)) as char);
+            i = i + 1;
+            if i == count as isize {
+                break;
+            }
+        }
     }
 }
 
