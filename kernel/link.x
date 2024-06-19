@@ -6,10 +6,10 @@ MEMORY {
 
 SECTIONS {
 
-  .text   : { *(.start) *(.text .text.*) }   > ram
-  .rodata : { *(.rodata .rodata.*) } > dos
-  .data   : { *(.data) }   > ram
-  .bss    : { *(.bss) }    > dos
-  .stack  : { *(.stack) }  > dos
+  .text   : { *(.main) *(.text .text.*) }   > ram
+  .rodata : { *(.rodata .rodata.*) } > ram
+  .data   : { *(.data .data.*) }   > ram
+  .bss    : { *(.bss) }    > ram
+  .stack  : { *(.stack) }  > ram
   _heap = ALIGN(8);
 }
