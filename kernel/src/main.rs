@@ -1,9 +1,9 @@
 #![no_std]
 #![no_main]
 
-use crate::kernel_console::{print, printu64dec};
+use crate::kernel_console::{print, printu64dec, printu64hex};
 use crate::memory_management::bios_memory_map::print_bios_map;
-use crate::memory_management::free_memory_map::{count_free_pages, init_memory_map};
+use crate::memory_management::free_memory_map::{allocate_one_page, count_free_pages, init_memory_map};
 
 mod kernel_console;
 mod cpu_ports;
@@ -26,5 +26,16 @@ init_memory_map();
     print("Hello world in Rust\n");
     printu64dec(count_free_pages()*4);
     print ("KB free\n");
-    print_bios_map();
+
+    print("Allocated page:");
+    printu64hex(allocate_one_page(2) as u64);
+    print("\n");
+
+    print("Allocated page:");
+    printu64hex(allocate_one_page(2) as u64);
+    print("\n");
+
+
+    printu64dec(count_free_pages()*4);
+    print ("KB free\n");
 }

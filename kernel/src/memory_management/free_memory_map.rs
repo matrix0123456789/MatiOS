@@ -20,6 +20,7 @@ fn last_useful_address() -> u64 {
 /*
 0 - free
 1 - reserved
+2 - allocated
  */
 pub fn init_memory_map() {
     let number_of_entries = last_useful_address() / 4096 + 1;
@@ -73,5 +74,33 @@ pub fn count_free_pages() -> u64 {
 
         }
         return ret;
+    }
+}
+
+pub fn allocate_one_page(allocation_type :u8) -> *mut u8 {
+    let entries = 0x100108 as *mut u8;
+    unsafe {
+        let number_of_entries = *(0x100100 as *mut u64);
+        for i in 0..number_of_entries {
+            if *entries.offset(i as isize) == 0 {
+                *entries.offset(i as isize) = allocation_type;
+                return (i * 4096) as *mut u8;
+            }
+        }
+    }
+panic!("No free memory");
+}
+pub fn free_page(page: *mut u8) {
+    let entries = 0x100108 as *mut u8;
+    unsafe {
+        let number_of_entries = *(0x100100 as *mut u64);
+        let page_number = page as u64 / 4096;
+        if page_number >= number_of_entries {
+            panic!("Invalid page number");
+        }
+        if *entries.offset(page_number as isize) == 0 {
+            panic!("Page is already free");
+        }
+        *entries.offset(page_number as isize) = 0;
     }
 }
