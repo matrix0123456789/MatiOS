@@ -18,11 +18,24 @@ pub fn print(text: &str) {
 pub fn print_char(char: char) {
     unsafe {
         let mut position = get_cursor_position();
-        let addres = 0xb8000 + 2 * position as u32;
-        *(addres as *mut u8) = char as u8;
-        *((addres + 1) as *mut u8) = 0x7;
+        if(char == '\n') {
+            position = position + 80 - position % 80;
+        }
+        else {
+            let addres = 0xb8000 + 2 * position as u32;
+            *(addres as *mut u8) = char as u8;
+            *((addres + 1) as *mut u8) = 0x7;
 
-        position += 1;
+            position += 1;
+        }
+        if(position>=25*80){
+            for i in 80..25*80{
+                let addres = 0xb8000 + 2 * i as u32;
+                let addres2 = 0xb8000 + 2 * (i-80) as u32;
+                *(addres2 as *mut u16) = *(addres as *mut u16);
+            }
+            position-=80;
+        }
 
         set_cursor_position(position)
     }

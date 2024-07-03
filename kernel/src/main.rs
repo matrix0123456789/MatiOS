@@ -19,5 +19,11 @@ pub extern "C" fn _start() -> ! {
 
 #[link_section = ".main"]
 fn main() {
-    print("Hello world in Rust");
+for i in 0..1000000 {
+
+    print("Hello world in Rust\n");
+    for i in 0..1000000 {
+
+    }
+}
 }
