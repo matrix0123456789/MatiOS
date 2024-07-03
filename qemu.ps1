@@ -1,1 +1,1 @@
-. "C:\Program Files\qemu\qemu-system-x86_64.exe"  -s -fda floppy.img -d int,cpu_reset -D log.txt
+. "C:\Program Files\qemu\qemu-system-x86_64.exe"  -s -fda floppy.img -d int,cpu_reset -D log.txt -m 1G

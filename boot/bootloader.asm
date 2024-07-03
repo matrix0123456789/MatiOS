@@ -10,6 +10,25 @@ start:
         mov byte [es:0x12], 'l'
         mov byte [es:0x14], 'd'
         mov byte [es:0x16], '!'
+
+;read memory map
+        mov ax, 0
+        mov es, ax
+        mov di, 0x6000
+        mov ebx, 0
+        mov edx, 0x534d4150
+
+        readMemoryLoop:
+        mov eax, 0xe820
+        mov ecx, 24
+        int 0x15
+
+        add di, 24
+        cmp ebx, 0
+        jne readMemoryLoop
+
+
+
 ;launching protected mode
         cli
         mov ax, 0x08
@@ -49,15 +68,14 @@ bits32:
 ;creating basic pagination
         mov dword [0x1000], 0x2001
         mov dword [0x2000], 0x3001
-        mov dword [0x3000], 0x4001
 
-        mov eax, 0x0001
-        mov ebx, 0x4000
+        mov eax, 0x0081
+        mov ebx, 0x3000
 paginationLoop:
         mov [ebx], eax
-        add eax, 0x1000
+        add eax, 0x200000
         add ebx, 8
-        cmp ebx, 0x5000
+        cmp ebx, 0x6000
         jne paginationLoop
 
         mov eax, 0x1001

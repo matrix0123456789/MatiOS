@@ -18,7 +18,7 @@ pub fn print(text: &str) {
 pub fn print_char(char: char) {
     unsafe {
         let mut position = get_cursor_position();
-        if(char == '\n') {
+        if char == '\n' {
             position = position + 80 - position % 80;
         }
         else {
@@ -28,7 +28,7 @@ pub fn print_char(char: char) {
 
             position += 1;
         }
-        if(position>=25*80){
+        if position>=25*80 {
             for i in 80..25*80{
                 let addres = 0xb8000 + 2 * i as u32;
                 let addres2 = 0xb8000 + 2 * (i-80) as u32;
@@ -55,4 +55,35 @@ pub fn set_cursor_position(position: u16) {
     port_output8(0x3d5, (position & 0xff) as u8);
     port_output8(0x3d4, 0x0e);
     port_output8(0x3d5, ((position >> 8) & 0xff) as u8);
+}
+pub fn printu64hex(mut value: u64) {
+
+    print("0x");
+    for _ in 0..16 {
+        let mut current = (value >> 60) as u8;
+        value <<= 4;
+        if current < 10 {
+            current += 48;
+        }
+        else {
+            current += 55;
+        }
+        print_char(current as char);
+    }
+}
+pub fn printu64dec(mut value: u64) {
+    let mut buffer = [0u8; 20];
+    let mut i = 0;
+    loop {
+        buffer[i] = (value % 10) as u8 + 48;
+        value /= 10;
+        i += 1;
+        if value == 0 {
+            break;
+        }
+    }
+    while i > 0 {
+        i -= 1;
+        print_char(buffer[i] as char);
+    }
 }
