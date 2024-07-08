@@ -38,3 +38,19 @@ fn main() {
     KernelConsole::printu64dec(FreeMemoryMap::count_free_pages()*4);
     KernelConsole::print ("KB free\n");
 }
+#[no_mangle]
+pub fn  memcpy(dest: *mut u8, src: *const u8, n: usize) {
+    unsafe {
+        for i in 0..n {
+            *dest.offset(i as isize) = *src.offset(i as isize);
+        }
+    }
+}
+#[no_mangle]
+pub fn memset(dest: *mut u8, val: u8, n: usize) {
+    unsafe {
+        for i in 0..n {
+            *dest.offset(i as isize) = val;
+        }
+    }
+}

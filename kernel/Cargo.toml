@@ -4,12 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [build]
-target="x86_64-unknown-none"
+target="./x86_64.json"
 debug=true
 opt-level = 0
-
-[profile.dev]
-panic = "unwind" # disable stack unwinding on panic
-target="x86_64-unknown-none"
-opt-level = 0
-debug = true
