@@ -1,9 +1,8 @@
 #![no_std]
 #![no_main]
 
-use crate::kernel_console::{print, printu64dec, printu64hex};
-use crate::memory_management::bios_memory_map::print_bios_map;
-use crate::memory_management::free_memory_map::{allocate_one_page, count_free_pages, init_memory_map};
+use crate::kernel_console::KernelConsole;
+use crate::memory_management::free_memory_map::FreeMemoryMap;
 
 mod kernel_console;
 mod cpu_ports;
@@ -22,20 +21,20 @@ pub extern "C" fn _start() -> ! {
 
 #[link_section = ".main"]
 fn main() {
-init_memory_map();
-    print("Hello world in Rust\n");
-    printu64dec(count_free_pages()*4);
-    print ("KB free\n");
+    FreeMemoryMap::init_memory_map();
+    KernelConsole::print("Hello world in Rust\n");
+    KernelConsole::printu64dec(FreeMemoryMap::count_free_pages()*4);
+    KernelConsole::print ("KB free\n");
 
-    print("Allocated page:");
-    printu64hex(allocate_one_page(2) as u64);
-    print("\n");
+    KernelConsole::print("Allocated page:");
+    KernelConsole::printu64hex(FreeMemoryMap::allocate_one_page(2) as u64);
+    KernelConsole::print("\n");
 
-    print("Allocated page:");
-    printu64hex(allocate_one_page(2) as u64);
-    print("\n");
+    KernelConsole::print("Allocated page:");
+    KernelConsole::printu64hex(FreeMemoryMap::allocate_one_page(2) as u64);
+    KernelConsole::print("\n");
 
 
-    printu64dec(count_free_pages()*4);
-    print ("KB free\n");
+    KernelConsole::printu64dec(FreeMemoryMap::count_free_pages()*4);
+    KernelConsole::print ("KB free\n");
 }
