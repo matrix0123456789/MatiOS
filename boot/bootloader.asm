@@ -68,6 +68,8 @@ bits32:
 ;creating basic pagination
         mov dword [0x1000], 0x2001
         mov dword [0x2000], 0x3001
+        mov dword [0x2008], 0x4001
+        mov dword [0x2010], 0x5001
 
         mov eax, 0x0081
         mov ebx, 0x3000
@@ -91,7 +93,7 @@ paginationLoop:
         mov ebx, 0x80000001
         mov cr0, ebx
 
-        mov esp, 0x11000
+        mov esp, 0x90000
         jmp 0x20:bits64
 
 [bits 64]

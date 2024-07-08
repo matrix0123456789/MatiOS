@@ -1,5 +1,8 @@
 use crate::cpu_ports::{port_input8, port_output8};
 pub struct KernelConsole {}
+
+static mut last_keyboard_code: u8 = 0;
+static mut COLOR: u8 = 0x7;
 impl KernelConsole {
     pub fn print(text: &str) {
         let text_pointer = text.as_ptr();
@@ -24,7 +27,7 @@ impl KernelConsole {
             } else {
                 let addres = 0xb8000 + 2 * position as u32;
                 *(addres as *mut u8) = char as u8;
-                *((addres + 1) as *mut u8) = 0x7;
+                *((addres + 1) as *mut u8) = COLOR;
 
                 position += 1;
             }
@@ -35,6 +38,11 @@ impl KernelConsole {
                     *(addres2 as *mut u16) = *(addres as *mut u16);
                 }
                 position -= 80;
+                for i in 24*80..25*80{
+                    let addres = 0xb8000 + 2 * i as u32;
+                    *(addres as *mut u8) = 0;
+                    *((addres + 1) as *mut u8) = 0x7;
+                }
             }
 
             KernelConsole::set_cursor_position(position)
@@ -84,5 +92,74 @@ impl KernelConsole {
             i -= 1;
             KernelConsole::print_char(buffer[i] as char);
         }
+    }
+    pub fn read_and_wait() -> char {
+        loop {
+            unsafe {
+                let mut code = port_input8(0x60);
+                if code != last_keyboard_code {
+                    last_keyboard_code = code;
+                    return Self::convert_key_code_to_ascii(code);
+                }
+            }
+        }
+    }
+    pub fn convert_key_code_to_ascii(code: u8) -> char {
+        return match code {
+            0x1e => 'a',
+            0x30 => 'b',
+            0x2e => 'c',
+            0x20 => 'd',
+            0x12 => 'e',
+            0x21 => 'f',
+            0x22 => 'g',
+            0x23 => 'h',
+            0x17 => 'i',
+            0x24 => 'j',
+            0x25 => 'k',
+            0x26 => 'l',
+            0x32 => 'm',
+            0x31 => 'n',
+            0x18 => 'o',
+            0x19 => 'p',
+            0x10 => 'q',
+            0x13 => 'r',
+            0x1f => 's',
+            0x14 => 't',
+            0x16 => 'u',
+            0x2f => 'v',
+            0x11 => 'w',
+            0x2d => 'x',
+            0x15 => 'y',
+            0x2c => 'z',
+            0x02 => '1',
+            0x03 => '2',
+            0x04 => '3',
+            0x05 => '4',
+            0x06 => '5',
+            0x07 => '6',
+            0x08 => '7',
+            0x09 => '8',
+            0x0a => '9',
+            0x0b => '0',
+            0x1c => '\n',
+            0x39 => ' ',
+            _ => '\0',
+        }
+    }
+    pub fn set_color(color: u8) {
+        unsafe {
+            COLOR = color;
+        }
+    }
+    pub fn clear_screen() {
+        unsafe {
+            for i in 0..80 * 25 {
+                let addres = 0xb8000 + 2 * i as u32;
+                *(addres as *mut u8) = 0;
+                *((addres + 1) as *mut u8) = COLOR;
+            }
+        }
+        KernelConsole::set_cursor_position(0);
     }
 }
