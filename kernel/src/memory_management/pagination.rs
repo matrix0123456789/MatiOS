@@ -1,4 +1,5 @@
-use crate::memory_management::free_memory_map::FreeMemoryMap;
+use crate::kernel_console::KernelConsole;
+use crate::memory_management::free_memory_map::{AllocationType, FreeMemoryMap};
 use crate::panic;
 
 pub struct PaginationL1 {
@@ -39,6 +40,17 @@ impl PaginationL4 {
             }
         }
     }
+    pub fn set(&mut self, info: PaginationInfo) {
+        let entry_index = (info.virtual_address >> 39) & 0x1ff;
+        if self.entries[entry_index] & 1 == 0 {
+            let new_page = FreeMemoryMap::allocate_one_page(AllocationType::Allocated as u8);
+            self.entries[entry_index] = new_page as u64 | 0x03;
+        }
+        unsafe {
+            let l3 = (self.entries[entry_index] & 0xffffffff_fffff000) as *mut PaginationL3;
+            (*l3).set(info);
+        }
+    }
 }
 impl PaginationL3 {
     pub fn get(&self, virtual_ptr: usize) -> PaginationInfo {
@@ -55,6 +67,17 @@ impl PaginationL3 {
                 let l2 = (self.entries[entry_index] & 0xffffffff_fffff000) as *mut PaginationL2;
                 return (*l2).get(virtual_ptr);
             }
+        }
+    }
+    pub fn set(&mut self, info: PaginationInfo) {
+        let entry_index = (info.virtual_address >> 30) & 0x1ff;
+        if self.entries[entry_index] & 1 == 0 {
+            let new_page = FreeMemoryMap::allocate_one_page(AllocationType::Allocated as u8);
+            self.entries[entry_index] = new_page as u64 | 0x03;
+        }
+        unsafe {
+            let l2 = (self.entries[entry_index] & 0xffffffff_fffff000) as *mut PaginationL2;
+            (*l2).set(info);
         }
     }
 }
@@ -83,11 +106,36 @@ impl PaginationL2 {
             }
         }
     }
+
+    pub fn set(&mut self, info: PaginationInfo) {
+        let entry_index = (info.virtual_address >> 21) & 0x1ff;
+        if info.size == 0x200000 {
+            self.entries[entry_index] = info.physical_address as u64 & 0xffff_ffff_ffe00000 | 0x83
+        } else if info.size == 0x1000
+        {
+            if self.entries[entry_index] & 1 == 0 {
+                let new_page = FreeMemoryMap::allocate_one_page(AllocationType::Allocated as u8);
+                self.entries[entry_index] = new_page as u64 | 0x03;
+            }
+            unsafe {
+                let l1 = (self.entries[entry_index] & 0xffffffff_fffff000) as *mut PaginationL1;
+                (*l1).set(info);
+            }
+        } else {
+            panic!("unsupported page size")
+        }
+    }
 }
+
 
 impl PaginationL1 {
     pub fn get(&self, virtual_ptr: usize) -> PaginationInfo {
         let entry_index = (virtual_ptr >> 21) & 0x1ff;
+        KernelConsole::printu64hex(self as *const PaginationL1 as u64);
+        KernelConsole::print("get_mapping L1");
+        KernelConsole::printu64hex(self.entries[entry_index]);
+        KernelConsole::print("\n");
+        KernelConsole::printu64hex(self.entries[entry_index] & 1);
         if self.entries[entry_index] & 1 == 0 {
             return PaginationInfo {
                 virtual_address: virtual_ptr & 0xffffffff_fffff000,
@@ -103,5 +151,17 @@ impl PaginationL1 {
                 physical_address: (self.entries[entry_index] & 0xffffffff_fffff000) as usize,
             };
         }
+    }
+    pub fn set(&mut self, info: PaginationInfo) {
+        let entry_index = (info.virtual_address >> 12) & 0x1ff;
+        KernelConsole::print("set_mapping L1");
+        KernelConsole::printu64hex(self.entries[entry_index]);
+        KernelConsole::print("\n");
+        KernelConsole::printu64hex((info.physical_address as u64 & 0xffff_ffff_ffff_f000) | 0x03);
+
+        KernelConsole::print("\n");
+        self.entries[entry_index] = (info.physical_address as u64 & 0xffff_ffff_ffff_f000) | 0x03;
+
+        KernelConsole::printu64hex(self.entries[entry_index]);
     }
 }

@@ -4,9 +4,10 @@
 extern crate alloc;
 
 use alloc::string::String;
+use alloc::vec::Vec;
 use crate::kernel_console::KernelConsole;
 use crate::memory_management::free_memory_map::FreeMemoryMap;
-use crate::memory_management::pagination::PaginationL4;
+use crate::memory_management::pagination::{PaginationInfo, PaginationL4};
 
 mod kernel_console;
 mod cpu_ports;
@@ -38,7 +39,7 @@ fn main() {
 
     loop {
         KernelConsole::print(">");
-        let mut line = ['\0'; 16];
+        let mut line = ['\0'; 256];
         let mut index = 0;
         loop {
             let char = KernelConsole::read_and_wait();
@@ -67,7 +68,25 @@ fn main() {
                             KernelConsole::print("\nPage not mapped");
                         }
                     }
-                } else {
+                }
+                else if line_string.starts_with("setpage ") {
+                    let split_line =line_string.split(" ");
+                    let collection: Vec<&str> = split_line.collect();
+                        let virtual_address = usize::from_str_radix(collection[1], 16).unwrap();
+                        let physical_address = usize::from_str_radix(collection[2], 16).unwrap();
+                        let info = PaginationInfo {
+                            physical_address: physical_address,
+                            virtual_address: virtual_address,
+                            size: 0x1000,
+                            is_enabled: true,
+                        };
+                        unsafe {
+                            (*PaginationL4::get_kernel_pagination()).set(info);
+                        }
+
+                }
+
+                    else {
                     KernelConsole::print("Unknown command\n");
                 }
 
