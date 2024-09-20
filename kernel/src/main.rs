@@ -5,6 +5,7 @@ extern crate alloc;
 
 use alloc::string::String;
 use alloc::vec::Vec;
+use crate::drivers::bus::pci::PciDevice;
 use crate::kernel_console::KernelConsole;
 use crate::memory_management::free_memory_map::FreeMemoryMap;
 use crate::memory_management::pagination::{PaginationInfo, PaginationL4};
@@ -12,6 +13,7 @@ use crate::memory_management::pagination::{PaginationInfo, PaginationL4};
 mod kernel_console;
 mod cpu_ports;
 mod memory_management;
+mod drivers;
 
 #[panic_handler]
 fn panic(_info: &core::panic::PanicInfo) -> ! {
@@ -68,25 +70,26 @@ fn main() {
                             KernelConsole::print("\nPage not mapped");
                         }
                     }
-                }
-                else if line_string.starts_with("setpage ") {
-                    let split_line =line_string.split(" ");
+                } else if line_string.starts_with("setpage ") {
+                    let split_line = line_string.split(" ");
                     let collection: Vec<&str> = split_line.collect();
-                        let virtual_address = usize::from_str_radix(collection[1], 16).unwrap();
-                        let physical_address = usize::from_str_radix(collection[2], 16).unwrap();
-                        let info = PaginationInfo {
-                            physical_address: physical_address,
-                            virtual_address: virtual_address,
-                            size: 0x1000,
-                            is_enabled: true,
-                        };
-                        unsafe {
-                            (*PaginationL4::get_kernel_pagination()).set(info);
-                        }
-
-                }
-
-                    else {
+                    let virtual_address = usize::from_str_radix(collection[1], 16).unwrap();
+                    let physical_address = usize::from_str_radix(collection[2], 16).unwrap();
+                    let info = PaginationInfo {
+                        physical_address: physical_address,
+                        virtual_address: virtual_address,
+                        size: 0x1000,
+                        is_enabled: true,
+                    };
+                    unsafe {
+                        (*PaginationL4::get_kernel_pagination()).set(info);
+                    }
+                } else if line_string == "pci" {
+                    let devices = PciDevice::enumerate_all();
+                    KernelConsole::print("Number of PCI devices: ");
+                    KernelConsole::printu64dec(devices.len() as u64);
+                    KernelConsole::print("\n");
+                } else {
                     KernelConsole::print("Unknown command\n");
                 }
 
