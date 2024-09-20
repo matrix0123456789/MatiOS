@@ -1,7 +1,9 @@
 #![feature(panic_info_message)]
 #![no_std]
 #![no_main]
+extern crate alloc;
 
+use alloc::string::String;
 use crate::kernel_console::KernelConsole;
 use crate::memory_management::free_memory_map::FreeMemoryMap;
 use crate::memory_management::pagination::PaginationL4;
@@ -43,11 +45,13 @@ fn main() {
             if char == '\n' {
                 KernelConsole::print("\n");
 
-                if line[0] == 'm' && line[1] == 'e' && line[2]== 'm'{
+                let line_string:String= line[0..index].iter().collect();
+
+                if line_string=="mem"{
                     KernelConsole::printu64dec(FreeMemoryMap::count_free_pages()*4);
                     KernelConsole::print ("KB free\n");
                 }
-                else if line[0] == 'b' && line[1]=='s' && line[2] == 'o' && line[3] == 'd'{
+                else if line_string == "bsod"{
                     panic!("Manual BSOD")
                 }else{
                     KernelConsole::print("Unknown command\n");
@@ -78,4 +82,15 @@ pub fn memset(dest: *mut u8, val: u8, n: usize) {
             *dest.offset(i as isize) = val;
         }
     }
+}
+#[no_mangle]
+pub fn memcmp(s1: *const u8, s2: *const u8, n: usize) -> i32 {
+    unsafe {
+        for i in 0..n {
+            if *s1.offset(i as isize) != *s2.offset(i as isize) {
+                return 1;
+            }
+        }
+    }
+    return 0;
 }
