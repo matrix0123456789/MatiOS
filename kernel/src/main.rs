@@ -16,7 +16,7 @@ mod memory_management;
 fn panic(_info: &core::panic::PanicInfo) -> ! {
     KernelConsole::set_color(0x17);
     KernelConsole::clear_screen();
-KernelConsole::print("Blue Screen of Death\n");
+    KernelConsole::print("Blue Screen of Death\n");
     KernelConsole::print(_info.message().as_str().unwrap());
     KernelConsole::print("\n");
     KernelConsole::print(_info.location().unwrap().file());
@@ -38,22 +38,36 @@ fn main() {
 
     loop {
         KernelConsole::print(">");
-        let mut line=['\0';16];
+        let mut line = ['\0'; 16];
         let mut index = 0;
         loop {
             let char = KernelConsole::read_and_wait();
             if char == '\n' {
                 KernelConsole::print("\n");
 
-                let line_string:String= line[0..index].iter().collect();
+                let line_string: String = line[0..index].iter().collect();
 
-                if line_string=="mem"{
-                    KernelConsole::printu64dec(FreeMemoryMap::count_free_pages()*4);
-                    KernelConsole::print ("KB free\n");
-                }
-                else if line_string == "bsod"{
+                if line_string == "mem" {
+                    KernelConsole::printu64dec(FreeMemoryMap::count_free_pages() * 4);
+                    KernelConsole::print("KB free\n");
+                } else if line_string == "bsod" {
                     panic!("Manual BSOD")
-                }else{
+                } else if line_string.starts_with("getpage ") {
+                    let address = usize::from_str_radix(&line_string[8..], 16).unwrap();
+                    unsafe {
+                        let info = (*PaginationL4::get_kernel_pagination()).get(address);
+                        KernelConsole::print("Virtual address: ");
+                        KernelConsole::printu64hex(info.virtual_address as u64);
+                        KernelConsole::print("\nSize: ");
+                        KernelConsole::printu64hex(info.size as u64);
+                        if info.is_enabled {
+                            KernelConsole::print("\nPhysical address: ");
+                            KernelConsole::printu64hex(info.physical_address as u64);
+                        } else {
+                            KernelConsole::print("\nPage not mapped");
+                        }
+                    }
+                } else {
                     KernelConsole::print("Unknown command\n");
                 }
 
@@ -61,14 +75,14 @@ fn main() {
             }
             if char != '\0' {
                 KernelConsole::print_char(char);
-                line[index]=char;
-                index+=1;
+                line[index] = char;
+                index += 1;
             }
         }
     }
 }
 #[no_mangle]
-pub fn  memcpy(dest: *mut u8, src: *const u8, n: usize) {
+pub fn memcpy(dest: *mut u8, src: *const u8, n: usize) {
     unsafe {
         for i in 0..n {
             *dest.offset(i as isize) = *src.offset(i as isize);
