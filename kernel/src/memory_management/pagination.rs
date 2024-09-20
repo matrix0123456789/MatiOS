@@ -1,6 +1,5 @@
 use crate::kernel_console::KernelConsole;
 use crate::memory_management::free_memory_map::{AllocationType, FreeMemoryMap};
-use crate::panic;
 
 pub struct PaginationL1 {
     pub entries: [u64; 512],

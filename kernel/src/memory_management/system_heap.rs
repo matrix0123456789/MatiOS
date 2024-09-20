@@ -14,7 +14,7 @@ unsafe impl GlobalAlloc for KernelHeap {
     }
 
     unsafe fn alloc_zeroed(&self, layout: Layout) -> *mut u8 {
-        let mut page = self.alloc(layout);
+        let page = self.alloc(layout);
         for i in 0..layout.size() {
             *(page.offset(i as isize)) = 0;
         }

@@ -3,6 +3,7 @@
 #![no_main]
 extern crate alloc;
 
+use alloc::format;
 use alloc::string::String;
 use alloc::vec::Vec;
 use crate::drivers::bus::pci::PciDevice;
@@ -89,6 +90,20 @@ fn main() {
                     KernelConsole::print("Number of PCI devices: ");
                     KernelConsole::printu64dec(devices.len() as u64);
                     KernelConsole::print("\n");
+                    for device in devices {
+                        let info= device.get_config();
+                        KernelConsole::print("Vendor ID: ");
+                        KernelConsole::print(format!("{:X}", info.vendor_id).as_str());
+                        KernelConsole::print(" Device ID: ");
+                        KernelConsole::print(format!("{:X}", info.device_id).as_str());
+                        KernelConsole::print(" Class: ");
+                        KernelConsole::print(format!("{:X}", info.class_code).as_str());
+                        KernelConsole::print(" Subclass: ");
+                        KernelConsole::print(format!("{:X}", info.subclass).as_str());
+                        KernelConsole::print(" ProgIF: ");
+                        KernelConsole::print(format!("{:X}", info.prog_if).as_str());
+                        KernelConsole::print("\n");
+                    }
                 } else {
                     KernelConsole::print("Unknown command\n");
                 }

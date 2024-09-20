@@ -1,7 +1,7 @@
 use crate::cpu_ports::{port_input8, port_output8};
 pub struct KernelConsole {}
 
-static mut last_keyboard_code: u8 = 0;
+static mut LAST_KEYBOARD_CODE: u8 = 0;
 static mut COLOR: u8 = 0x7;
 impl KernelConsole {
     pub fn print(text: &str) {
@@ -96,9 +96,9 @@ impl KernelConsole {
     pub fn read_and_wait() -> char {
         loop {
             unsafe {
-                let mut code = port_input8(0x60);
-                if code != last_keyboard_code {
-                    last_keyboard_code = code;
+                let code = port_input8(0x60);
+                if code != LAST_KEYBOARD_CODE {
+                    LAST_KEYBOARD_CODE = code;
                     return Self::convert_key_code_to_ascii(code);
                 }
             }
