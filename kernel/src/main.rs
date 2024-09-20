@@ -33,9 +33,6 @@ fn main() {
     FreeMemoryMap::init_memory_map();
     KernelConsole::print("Hello world in Rust\n");
 
-    PaginationL4::get_kernel_pagination().set_mapping(0x12340000, 0x4321000);
-    PaginationL4::get_kernel_pagination().set_mapping(0x4321000, 0x4321000);
-
 
     loop {
         KernelConsole::print(">");
