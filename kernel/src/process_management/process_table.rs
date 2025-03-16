@@ -6,6 +6,7 @@ use alloc::rc::Rc;
 use alloc::vec::Vec;
 use core::arch::asm;
 use core::cell::RefCell;
+use crate::drivers::apic::local_apic::LocalApic;
 
 pub static mut GLOBAL_PROCESS_TABLE: *mut ProcessTable = 0 as *mut ProcessTable;
 pub struct ProcessTable {
@@ -16,6 +17,7 @@ pub struct ProcessTable {
 
 impl ProcessTable {
     pub(crate) fn resume_thread() {
+        LocalApic::reset_timer();
         let next_thread = Self::get_singleton().thread_queue.pop_front();
         let next_thread2 = next_thread.clone();
         if next_thread.is_some() {

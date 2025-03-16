@@ -7,6 +7,7 @@ extern crate alloc;
 use alloc::format;
 use alloc::string::String;
 use alloc::vec::Vec;
+use crate::drivers::apic::local_apic::LocalApic;
 use crate::drivers::bus::pci::PciDevice;
 use crate::interrupts::interrupt_descriptoy_table::InterruptDescriptorTable;
 use crate::kernel_console::KernelConsole;
@@ -44,6 +45,7 @@ fn main() {
     FreeMemoryMap::init_memory_map();
     KernelConsole::print("Hello world in Rust\n");
 ProcessTable::add_kernel_process();
+    LocalApic::init();
 
     loop {
         KernelConsole::print(">");
@@ -111,6 +113,8 @@ ProcessTable::add_kernel_process();
                     }
                 } else if line_string == "int" {
                     InterruptDescriptorTable::init();
+                } else if line_string == "timer" {
+                    LocalApic::reset_timer();
                 } else if line_string == "ps" {
                     for process in ProcessTable::get_singleton().processes.clone(){
                         KernelConsole::print("Process: ");
