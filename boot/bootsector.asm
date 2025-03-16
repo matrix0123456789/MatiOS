@@ -54,7 +54,7 @@ load:
 
 afterLoad:
         mov ax, [currentDestination]
-        cmp ax, 0x3000
+        cmp ax, 0x6000
         jb load
 
         jmp 0x0000:0x8200

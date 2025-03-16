@@ -1,4 +1,5 @@
 #![feature(panic_info_message)]
+#![feature(naked_functions)]
 #![no_std]
 #![no_main]
 extern crate alloc;
@@ -11,12 +12,14 @@ use crate::interrupts::interrupt_descriptoy_table::InterruptDescriptorTable;
 use crate::kernel_console::KernelConsole;
 use crate::memory_management::free_memory_map::FreeMemoryMap;
 use crate::memory_management::pagination::{PaginationInfo, PaginationL4};
+use crate::process_management::process_table::ProcessTable;
 
 mod kernel_console;
 mod cpu_ports;
 mod memory_management;
 mod drivers;
 mod interrupts;
+mod process_management;
 
 #[panic_handler]
 fn panic(_info: &core::panic::PanicInfo) -> ! {
@@ -40,7 +43,7 @@ pub extern "C" fn _start() -> ! {
 fn main() {
     FreeMemoryMap::init_memory_map();
     KernelConsole::print("Hello world in Rust\n");
-
+ProcessTable::add_kernel_process();
 
     loop {
         KernelConsole::print(">");
@@ -108,6 +111,11 @@ fn main() {
                     }
                 } else if line_string == "int" {
                     InterruptDescriptorTable::init();
+                } else if line_string == "ps" {
+                    for process in ProcessTable::get_singleton().processes.clone(){
+                        KernelConsole::print("Process: ");
+                        KernelConsole::print(&*process.borrow().name);
+                    }
                 } else {
                     KernelConsole::print("Unknown command\n");
                 }
