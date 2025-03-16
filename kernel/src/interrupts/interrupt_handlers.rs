@@ -1,5 +1,6 @@
 use core::arch::asm;
 use crate::kernel_console::KernelConsole;
+use crate::process_management::process_table::ProcessTable;
 
 pub struct InterruptHandlers{}
 impl InterruptHandlers {
@@ -22,16 +23,17 @@ impl InterruptHandlers {
             "push r13",
             "push r14",
             "push r15",
+            "mov rdi, rsp",
             "call default_handler_main",
             options(noreturn),
             )
         }
     }
     #[no_mangle]
-     fn default_handler_main(){
+     fn default_handler_main(stack_pointer_raw : u64){
          KernelConsole::print("Interrupt handled\n");
-         loop {
+         ProcessTable::pause_current_thread(stack_pointer_raw);
 
-         }
+        ProcessTable::resume_thread();
      }
 }

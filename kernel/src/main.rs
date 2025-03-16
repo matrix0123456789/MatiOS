@@ -115,6 +115,12 @@ ProcessTable::add_kernel_process();
                     for process in ProcessTable::get_singleton().processes.clone(){
                         KernelConsole::print("Process: ");
                         KernelConsole::print(&*process.borrow().name);
+                        KernelConsole::print("\n");
+                        for thread in process.borrow().threads.clone(){
+                            KernelConsole::print("    Thread: ");
+                            KernelConsole::print(&*thread.borrow().name);
+                            KernelConsole::print("\n");
+                        }
                     }
                 } else {
                     KernelConsole::print("Unknown command\n");
@@ -156,4 +162,18 @@ pub fn memcmp(s1: *const u8, s2: *const u8, n: usize) -> i32 {
         }
     }
     return 0;
+}
+#[no_mangle]
+pub fn memmove(dest: *mut u8, src: *const u8, n: usize) {
+    unsafe {
+        if dest < src as *mut u8 {
+            for i in 0..n {
+                *dest.offset(i as isize) = *src.offset(i as isize);
+            }
+        } else {
+            for i in (0..n).rev() {
+                *dest.offset(i as isize) = *src.offset(i as isize);
+            }
+        }
+    }
 }
