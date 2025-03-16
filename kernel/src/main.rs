@@ -7,6 +7,7 @@ use alloc::format;
 use alloc::string::String;
 use alloc::vec::Vec;
 use crate::drivers::bus::pci::PciDevice;
+use crate::interrupts::interrupt_descriptoy_table::InterruptDescriptorTable;
 use crate::kernel_console::KernelConsole;
 use crate::memory_management::free_memory_map::FreeMemoryMap;
 use crate::memory_management::pagination::{PaginationInfo, PaginationL4};
@@ -15,6 +16,7 @@ mod kernel_console;
 mod cpu_ports;
 mod memory_management;
 mod drivers;
+mod interrupts;
 
 #[panic_handler]
 fn panic(_info: &core::panic::PanicInfo) -> ! {
@@ -104,6 +106,8 @@ fn main() {
                         KernelConsole::print(format!("{:X}", info.prog_if).as_str());
                         KernelConsole::print("\n");
                     }
+                } else if line_string == "int" {
+                    InterruptDescriptorTable::init();
                 } else {
                     KernelConsole::print("Unknown command\n");
                 }
