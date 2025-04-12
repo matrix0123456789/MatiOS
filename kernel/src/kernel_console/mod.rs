@@ -46,6 +46,8 @@ impl KernelConsole {
                 }
             }
 
+            port_output8(0x3f8, char as u8);
+
             KernelConsole::set_cursor_position(position)
         }
     }

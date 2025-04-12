@@ -45,7 +45,7 @@ pub extern "C" fn _start() -> ! {
 #[link_section = ".main"]
 fn main() {
     FreeMemoryMap::init_memory_map();
-    KernelConsole::print("Hello world in Rust\n");
+    KernelConsole::print("Welcome in MatiOS\n");
     ProcessTable::add_kernel_process();
     LocalApic::init();
 
