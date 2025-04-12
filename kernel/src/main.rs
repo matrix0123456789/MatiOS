@@ -7,6 +7,8 @@ extern crate alloc;
 use alloc::format;
 use alloc::string::String;
 use alloc::vec::Vec;
+use core::arch::asm;
+use core::ptr::{read_volatile, write_volatile};
 use crate::drivers::apic::local_apic::LocalApic;
 use crate::drivers::bus::pci::PciDevice;
 use crate::interrupts::interrupt_descriptoy_table::InterruptDescriptorTable;
@@ -46,6 +48,8 @@ fn main() {
     KernelConsole::print("Hello world in Rust\n");
 ProcessTable::add_kernel_process();
     LocalApic::init();
+
+    InterruptDescriptorTable::init();
 
     loop {
         KernelConsole::print(">");
@@ -112,21 +116,47 @@ ProcessTable::add_kernel_process();
                         KernelConsole::print("\n");
                     }
                 } else if line_string == "int" {
-                    InterruptDescriptorTable::init();
+                    unsafe {
+                        asm!(
+                        "int 0x30",
+                        )
+                    }
                 } else if line_string == "timer" {
                     LocalApic::reset_timer();
                 } else if line_string == "ps" {
-                    for process in ProcessTable::get_singleton().processes.clone(){
+                    for process in ProcessTable::get_singleton().processes.clone() {
                         KernelConsole::print("Process: ");
                         KernelConsole::print(&*process.borrow().name);
                         KernelConsole::print("\n");
-                        for thread in process.borrow().threads.clone(){
+                        for thread in process.borrow().threads.clone() {
                             KernelConsole::print("    Thread: ");
                             KernelConsole::print(&*thread.borrow().name);
                             KernelConsole::print("\n");
                         }
                     }
-                } else {
+                } else if line_string.starts_with("thread "){
+                    let split_line = line_string.split(" ");
+                    let collection:Vec<&str> = split_line.collect();
+                    let parameter = collection[1];
+                    let parameter_parsed = parameter.parse::<u64>().unwrap();
+
+                    fn thread_function(parameter: u64){
+                        KernelConsole::print("Thread started with parameter: ");
+                        KernelConsole::printu64dec(parameter);
+                        KernelConsole::print("\n");
+                        loop {
+                            unsafe {
+                                let screen_prt=0xb8000 as *mut u16;
+                                let char= screen_prt.offset(0);
+                                write_volatile(char, (read_volatile(char)+1) % 0xffff);
+                            }
+                        }
+                    }
+                    unsafe {
+                        (*ProcessTable::get_singleton()).create_kernel_thread("Test thread", thread_function, parameter_parsed);
+                    }
+
+            } else {
                     KernelConsole::print("Unknown command\n");
                 }
 

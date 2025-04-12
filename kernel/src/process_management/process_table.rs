@@ -1,3 +1,4 @@
+use crate::drivers::apic::local_apic::LocalApic;
 use crate::process_management::process::Process;
 use crate::process_management::thread::Thread;
 use alloc::boxed::Box;
@@ -6,7 +7,7 @@ use alloc::rc::Rc;
 use alloc::vec::Vec;
 use core::arch::asm;
 use core::cell::RefCell;
-use crate::drivers::apic::local_apic::LocalApic;
+use core::ptr::write_volatile;
 
 pub static mut GLOBAL_PROCESS_TABLE: *mut ProcessTable = 0 as *mut ProcessTable;
 pub struct ProcessTable {
@@ -50,6 +51,24 @@ impl ProcessTable {
                 asm!("hlt");
             }
         }
+    }
+    pub fn create_kernel_thread(&mut self, name: &str, start_function: fn(u64), parameter: u64) {
+        let kernel_process = &self.processes[0].clone();
+        let stack_base = Box::into_raw(Box::new([0 as u8; 4096]));
+        unsafe {
+            let stack = ((stack_base as usize) + 4096 - 8) as *mut u64;
+            write_volatile(stack.offset(-3), stack as u64);
+            write_volatile(stack.offset(-4), 0x8);
+            write_volatile(stack.offset(-5), 0x20);
+            write_volatile(stack.offset(-6), start_function as u64);
+            write_volatile(stack.offset(-12), parameter); //rdi register
+        }
+        let thread = Rc::new(RefCell::new(Thread::new(
+            (stack_base as u64 + 4096 - 22 * 8) as *mut u8,
+            Box::from(name),
+        )));
+        kernel_process.borrow_mut().threads.push(Rc::clone(&thread));
+        self.thread_queue.push_back(Rc::clone(&thread));
     }
 }
 

@@ -31,7 +31,7 @@ impl LocalApic {
         Self::write(LocalApicRegister::EOI, 0);
         Self::write(LocalApicRegister::TimerInitialCount, 1000000000);
         Self::write(LocalApicRegister::Timer, 32);
-        Self::write(LocalApicRegister::TimerDivideConfig, 0)
+        Self::write(LocalApicRegister::TimerDivideConfig, 2)
     }
     fn read(reg: LocalApicRegister) -> u32 {
 

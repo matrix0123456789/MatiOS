@@ -153,12 +153,7 @@ impl PaginationL1 {
     }
     pub fn set(&mut self, info: PaginationInfo) {
         let entry_index = (info.virtual_address >> 12) & 0x1ff;
-        KernelConsole::print("set_mapping L1");
-        KernelConsole::printu64hex(self.entries[entry_index]);
-        KernelConsole::print("\n");
-        KernelConsole::printu64hex((info.physical_address as u64 & 0xffff_ffff_ffff_f000) | 0x03);
 
-        KernelConsole::print("\n");
         self.entries[entry_index] = (info.physical_address as u64 & 0xffff_ffff_ffff_f000) | 0x03;
 
         KernelConsole::printu64hex(self.entries[entry_index]);
