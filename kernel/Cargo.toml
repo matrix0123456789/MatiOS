@@ -3,7 +3,7 @@ name = "matios-kernel"
 version = "0.1.0"
 edition = "2021"
 
-[build]
-target="./x86_64.json"
-debug=true
-opt-level = 0
+#[build]
+#target="./x86_64.json"
+#debug=true
+#opt-level = 0

@@ -1,3 +1,4 @@
+use core::arch::asm;
 use crate::cpu_ports::{port_input8, port_output8};
 pub struct KernelConsole {}
 
@@ -100,6 +101,10 @@ impl KernelConsole {
                 if code != LAST_KEYBOARD_CODE {
                     LAST_KEYBOARD_CODE = code;
                     return Self::convert_key_code_to_ascii(code);
+                }else{
+                    asm!(
+                    "hlt"
+                    )
                 }
             }
         }

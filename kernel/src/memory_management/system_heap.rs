@@ -5,11 +5,11 @@ struct KernelHeap{
 
 }
 unsafe impl GlobalAlloc for KernelHeap {
-    unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
+    unsafe fn alloc(&self, _layout: Layout) -> *mut u8 {
         return FreeMemoryMap::allocate_one_page(AllocationType::Allocated as u8)
     }
 
-    unsafe fn dealloc(&self, ptr: *mut u8, layout: Layout) {
+    unsafe fn dealloc(&self, ptr: *mut u8, _layout: Layout) {
         FreeMemoryMap::free_page(ptr)
     }
 
@@ -21,7 +21,7 @@ unsafe impl GlobalAlloc for KernelHeap {
         return page;
     }
 
-    unsafe fn realloc(&self, ptr: *mut u8, layout: Layout, new_size: usize) -> *mut u8 {
+    unsafe fn realloc(&self, ptr: *mut u8, _layout: Layout, _new_size: usize) -> *mut u8 {
         return ptr;
     }
 }

@@ -1,4 +1,3 @@
-use crate::kernel_console::KernelConsole;
 use crate::memory_management::free_memory_map::{AllocationType, FreeMemoryMap};
 
 pub struct PaginationL1 {
@@ -130,11 +129,6 @@ impl PaginationL2 {
 impl PaginationL1 {
     pub fn get(&self, virtual_ptr: usize) -> PaginationInfo {
         let entry_index = (virtual_ptr >> 21) & 0x1ff;
-        KernelConsole::printu64hex(self as *const PaginationL1 as u64);
-        KernelConsole::print("get_mapping L1");
-        KernelConsole::printu64hex(self.entries[entry_index]);
-        KernelConsole::print("\n");
-        KernelConsole::printu64hex(self.entries[entry_index] & 1);
         if self.entries[entry_index] & 1 == 0 {
             return PaginationInfo {
                 virtual_address: virtual_ptr & 0xffffffff_fffff000,
@@ -156,6 +150,5 @@ impl PaginationL1 {
 
         self.entries[entry_index] = (info.physical_address as u64 & 0xffff_ffff_ffff_f000) | 0x03;
 
-        KernelConsole::printu64hex(self.entries[entry_index]);
     }
 }

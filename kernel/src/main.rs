@@ -4,11 +4,6 @@
 #![no_main]
 extern crate alloc;
 
-use alloc::format;
-use alloc::string::String;
-use alloc::vec::Vec;
-use core::arch::asm;
-use core::ptr::{read_volatile, write_volatile};
 use crate::drivers::apic::local_apic::LocalApic;
 use crate::drivers::bus::pci::PciDevice;
 use crate::interrupts::interrupt_descriptoy_table::InterruptDescriptorTable;
@@ -16,12 +11,17 @@ use crate::kernel_console::KernelConsole;
 use crate::memory_management::free_memory_map::FreeMemoryMap;
 use crate::memory_management::pagination::{PaginationInfo, PaginationL4};
 use crate::process_management::process_table::ProcessTable;
+use alloc::format;
+use alloc::string::String;
+use alloc::vec::Vec;
+use core::arch::asm;
+use core::ptr::{read_volatile, write_volatile};
 
-mod kernel_console;
 mod cpu_ports;
-mod memory_management;
 mod drivers;
 mod interrupts;
+mod kernel_console;
+mod memory_management;
 mod process_management;
 
 #[panic_handler]
@@ -46,7 +46,7 @@ pub extern "C" fn _start() -> ! {
 fn main() {
     FreeMemoryMap::init_memory_map();
     KernelConsole::print("Hello world in Rust\n");
-ProcessTable::add_kernel_process();
+    ProcessTable::add_kernel_process();
     LocalApic::init();
 
     InterruptDescriptorTable::init();
@@ -102,7 +102,7 @@ ProcessTable::add_kernel_process();
                     KernelConsole::printu64dec(devices.len() as u64);
                     KernelConsole::print("\n");
                     for device in devices {
-                        let info= device.get_config();
+                        let info = device.get_config();
                         KernelConsole::print("Vendor ID: ");
                         KernelConsole::print(format!("{:X}", info.vendor_id).as_str());
                         KernelConsole::print(" Device ID: ");
@@ -116,11 +116,7 @@ ProcessTable::add_kernel_process();
                         KernelConsole::print("\n");
                     }
                 } else if line_string == "int" {
-                    unsafe {
-                        asm!(
-                        "int 0x30",
-                        )
-                    }
+                    unsafe { asm!("int 0x30",) }
                 } else if line_string == "timer" {
                     LocalApic::reset_timer();
                 } else if line_string == "ps" {
@@ -134,29 +130,30 @@ ProcessTable::add_kernel_process();
                             KernelConsole::print("\n");
                         }
                     }
-                } else if line_string.starts_with("thread "){
+                } else if line_string.starts_with("thread ") {
                     let split_line = line_string.split(" ");
-                    let collection:Vec<&str> = split_line.collect();
+                    let collection: Vec<&str> = split_line.collect();
                     let parameter = collection[1];
                     let parameter_parsed = parameter.parse::<u64>().unwrap();
 
-                    fn thread_function(parameter: u64){
+                    fn thread_function(parameter: u64) {
                         KernelConsole::print("Thread started with parameter: ");
                         KernelConsole::printu64dec(parameter);
                         KernelConsole::print("\n");
                         loop {
                             unsafe {
-                                let screen_prt=0xb8000 as *mut u16;
-                                let char= screen_prt.offset(0);
-                                write_volatile(char, (read_volatile(char)+1) % 0xffff);
+                                let screen_prt = 0xb8000 as *mut u16;
+                                let char = screen_prt.offset(0);
+                                write_volatile(char, (read_volatile(char) + 1) % 0xffff);
                             }
                         }
                     }
-                    unsafe {
-                        (*ProcessTable::get_singleton()).create_kernel_thread("Test thread", thread_function, parameter_parsed);
-                    }
-
-            } else {
+                    (*ProcessTable::get_singleton()).create_kernel_thread(
+                        "Test thread",
+                        thread_function,
+                        parameter_parsed,
+                    );
+                } else {
                     KernelConsole::print("Unknown command\n");
                 }
 

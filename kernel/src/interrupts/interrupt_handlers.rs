@@ -1,10 +1,10 @@
 use core::arch::asm;
-use crate::kernel_console::KernelConsole;
 use crate::process_management::process_table::ProcessTable;
 
 pub struct InterruptHandlers{}
 impl InterruptHandlers {
     #[naked]
+    #[allow(undefined_naked_function_abi)]
     pub fn default_handler(){
         unsafe{
             asm!(
@@ -31,7 +31,8 @@ impl InterruptHandlers {
     }
     #[no_mangle]
      fn default_handler_main(stack_pointer_raw : u64){
-         KernelConsole::print("Interrupt handled\n");
+        //  KernelConsole::print("Interrupt handled\n");
+        // KernelConsole::printu64hex(stack_pointer_raw);
          ProcessTable::pause_current_thread(stack_pointer_raw);
 
         ProcessTable::resume_thread();

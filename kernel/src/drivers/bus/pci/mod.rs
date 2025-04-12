@@ -6,6 +6,7 @@ pub struct PciDevice {
     pub slot: u8,
     pub function: u8,
 }
+#[allow(dead_code)]
 pub struct PciDeviceConfig {
     pub vendor_id: u16,
     pub device_id: u16,

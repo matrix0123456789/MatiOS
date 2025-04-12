@@ -74,8 +74,8 @@ impl ProcessTable {
 
 impl ProcessTable {
     pub(crate) fn pause_current_thread(stack_pointer_raw: u64) {
-        let mut current_thread = Option::clone(&Self::get_singleton().current_threads[0]);
-        let mut current_thread2 = current_thread.clone();
+        let  current_thread = Option::clone(&Self::get_singleton().current_threads[0]);
+        let current_thread2 = current_thread.clone();
         Self::get_singleton().current_threads[0] = None;
         Rc::clone(&current_thread.unwrap())
             .borrow_mut()
